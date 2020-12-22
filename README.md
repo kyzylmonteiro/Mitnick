@@ -13,17 +13,12 @@ Contributors: Kyzyl, Kinshu, Srija, Nishtha Singhal and Nishtha Ahuja
 <img src="https://github.com/kyzylmonteiro/Mitnick/blob/main/demo/processing.gif"  />
 </p>
 
-### Caution readers about unverified information sent by members
+### Caution readers about unverified information
 <p align="middle" float="left">
 <img src="https://github.com/kyzylmonteiro/Mitnick/blob/main/demo/nonAdminLevel.png"  />
 </p>
 
-### Verify images sent by the admin
-<p align="middle" float="left">
-<img src="https://github.com/kyzylmonteiro/Mitnick/blob/main/demo/adminLevel.png" />
-</p>
-
-### Share the source of the image and the number of times it was forwarded
+### Share the Original Sender of the image and the number of times it was forwarded
 <p align="middle" float="left">
 <img src="https://github.com/kyzylmonteiro/Mitnick/blob/main/demo/infoFeature.png" />
 </p>
@@ -33,7 +28,12 @@ Contributors: Kyzyl, Kinshu, Srija, Nishtha Singhal and Nishtha Ahuja
 <img src="https://github.com/kyzylmonteiro/Mitnick/blob/main/demo/retractionFeature.png" />
 </p>
 
-### Cautions readers that images are edited
+### Mark images sent by the admin as Verified
+<p align="middle" float="left">
+<img src="https://github.com/kyzylmonteiro/Mitnick/blob/main/demo/adminLevel.png" />
+</p>
+
+### Cautions readers when images are edited forwards
 <p align="middle" float="left">
 <img src="https://github.com/kyzylmonteiro/Mitnick/blob/main/demo/editedImage.png"  />
 </p>
@@ -45,7 +45,7 @@ To do his job Mitnick employs the following techniques:
 - encryption
 
 ### Mitnick's Approach 
-Every time an image is sent
+Every time an image is sent:
 ```python
 if(checkIfHashPresent(image) == False):
     # hash not present .... i.e. new image
