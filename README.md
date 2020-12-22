@@ -40,9 +40,9 @@ Contributors: Kyzyl, Kinshu, Srija, Nishtha Singhal and Nishtha Ahuja
 
 ## Our Approach
 To do his job Mitnick employs the following techniques:
-- image steganography
-- integrity check using sha256
-- encryption
+- image steganography - LSB
+- integrity check using hashing - SHA256
+- Cryptosystem - RSA
 
 ### Mitnick's Approach 
 Every time an image is sent:
