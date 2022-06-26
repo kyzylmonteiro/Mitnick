@@ -1,0 +1,11 @@
+# ignore pycache files
+*.pyc
+
+# ignore private and public key files genereated by penerateKey.py
+*.pem
+
+# ignore debugging images sent and recieved in the channel
+*.png
+
+# ignore file to keep app token safe 
+.env

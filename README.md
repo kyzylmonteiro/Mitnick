@@ -12,6 +12,7 @@ Contributors: Kyzyl, Kinshu, Srija, Nishtha Singhal and Nishtha Ahuja
 ### Instructions
 - Install dependencies and genereate private and public keys
 - Authorize access to your server follow steps at https://realpython.com/how-to-make-a-discord-bot-python/ 
+- Add `.env` file with DISCORD_TOKEN= 'app_token'
 - Run the bot
 
 ### Commands
