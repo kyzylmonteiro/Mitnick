@@ -1,7 +1,6 @@
 import os
 import random
 import discord
-# import aiohttp
 from dotenv import load_dotenv
 import io
 from PIL import Image
@@ -112,7 +111,7 @@ async def on_message(message):
         for ext in pic_ext:
             if msg.attachments[0].url.endswith(ext):
                 f = msg.attachments[0]
-                await f.save(r"E:\Projects\MitnickDiscordBot\A.png")
+                await f.save(r".\A.png")
                 hashAisehi = rsaFCS.extract_code("A.png")
                 stegoData = stego.Decode("recovered.png")
                 user = await client.fetch_user(int(stegoData[1:]))
@@ -125,7 +124,7 @@ async def on_message(message):
                 print("Image uploaded.")
                 f = message.attachments[0]
                 nf = await f.to_file()
-                await f.save(r"E:\Projects\MitnickDiscordBot\A.png")
+                await f.save(r".\A.png")
                 if(checkIfHashPresent("A.png") == 1):
                     # hash present
 
