@@ -8,12 +8,18 @@ Contributors: Kyzyl, Kinshu, Srija, Nishtha Singhal and Nishtha Ahuja
 - Readers are cautioned when edited images are sent.
 
 ## Build & Add Bot to Server
-To install dependencies and genereate private and public keys
-'pip install discord.py dotenv python-dotenv pillow pycryptodomex numpy
-python generateKey.py'
-To add the bot to your server follow steps at https://realpython.com/how-to-make-a-discord-bot-python/ 
-To run the bot
-'python bot.py'
+
+### Instructions
+- Install dependencies and genereate private and public keys
+- Authorize access to your server follow steps at https://realpython.com/how-to-make-a-discord-bot-python/ 
+- Run the bot
+
+### Commands
+```
+pip install discord.py dotenv python-dotenv pillow pycryptodomex numpy
+python generateKey.py
+python bot.py
+```
 
 ## Meet Mitnick, he processes every image sent in a channel to...
 
