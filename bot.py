@@ -10,44 +10,38 @@ import rsaFCS
 from Cryptodome.PublicKey import RSA
 import base64
 
-load_dotenv()
+load_dotenv()  # loading environment variables
+# loading discord bot's app token for authorization
 TOKEN = os.getenv('DISCORD_TOKEN')
 
+# a client connection that connects to Discord. This class is used to interact with the Discord WebSocket and API.
 client = discord.Client()
+# import private and public keys for RSA cryptography
 privateKey = RSA.importKey(open("privateKey.pem").read())
 publicKey = RSA.importKey(open("publicKey.pem").read())
 
 
-@client.event
+@client.event  # registers an event to listen to
 async def on_ready():
+    # on ready prints acknowledgement on terminal
     print(f'{client.user} is online!')
 
 
-@client.event
-async def on_member_join(member):
-    channel = discord.utils.get(member.guild.channels, name='general')
-    print("Somebody joined.")
-    await channel.send(f"""Yo {member.mention}! you have a FCS project todo""")
-
-
+# returns 1 if hash is present else -1, helps infer if its a new image or a forwarded image
 def checkIfHashPresent(imageSrc):
-    # print("Reached here")
     if(rsaFCS.extract_code(imageSrc) == False):
-        # print("Hash Not present")
         return -1
     else:
-        # print("Hash PRESENT")
         return 1
 
 
+# returns 1 if hash stored is the same as calculated hash of the image else -1, helps infer if image was edited or not
 def checkIfHashValid(imageSrc, hashStored):
     with open(imageSrc, 'rb') as imageFile:
+        # encodes binary data to ASCII charachters
         imageString = base64.b64encode(imageFile.read())
+    # SHA256 hash of the image is generated for the image at hand
     hashComputed = rsaFCS.gen_SHA256_digest(imageString)
-    print(hashStored)
-    print(len(hashStored))
-    print(hashComputed)
-    print(len(hashComputed))
     if(hashStored == hashComputed):
         return 1
     else:
@@ -55,170 +49,121 @@ def checkIfHashValid(imageSrc, hashStored):
 
 
 @client.event
-async def on_message(message):
+async def on_message(message):  # handles the event of when a message is sent
     if message.author == client.user:
         return
 
-    brooklyn_99_quotes = [
-        'I\'m the human form of the 💯 emoji.',
-        'Bingpot!',
-        (
-            'Cool. Cool cool cool cool cool cool cool, '
-            'no doubt no doubt no doubt no doubt.'
-        ),
-    ]
-
-    if message.content == '99!':
-        response = random.choice(brooklyn_99_quotes)
-        await message.channel.send(response)
-
-    if message.content == "!status":
-        await message.channel.send(" 1. Image Stegnography :sunglasses: Done \n 2. Encrypt & Decrypt message :sunglasses:   Done \n 3. Use Discord.py to upload encrypted image :sunglasses:  Done \n 4. Integrate 1,2&3 :sunglasses:  Done \n 5. Get full in project.⌛ hold on to that thought guys!")
-
-    if message.content == "!secret":
-        user = str(message.author.id)
-        await message.channel.purge(limit=1)
-        await message.channel.send("@<" + user + "> first, promise me you won't tell anyone....")
-
-    bad_words = ["bad", "stop"]
-
+    # future feature can remove messages with curse words
+    bad_words = ["curse", "words"]
     for word in bad_words:
         if message.content.count(word) > 0:
-            print("A bad word was said")
-            await message.channel.purge(limit=1)
+            print("Dont you curse.")  # printed in terminal
+            await message.channel.purge(limit=1)  # removes last message
 
-    if message.content == "!help":
-        embed = discord.Embed(title="Help on Mitnick",
+    if message.content == "!help":  # lists commands available
+        embed = discord.Embed(title="Help",
                               description="Some useful commands")
-        embed.add_field(name="!todo", value="To see whats pending.")
-        embed.add_field(name="upload an image",
-                        value="To see our FCS Project progress.")
+        embed.add_field(name="!hello",
+                        value="To know more \n about me.")
+        embed.add_field(name="Upload an image",
+                        value="To see me work.")
+        embed.add_field(name="!info",
+                        value="To know more about \n the last image sent.")
         await message.channel.send(content=None, embed=embed)
 
-    if message.content == "!todo":
-        await message.channel.send(" 1. Image Stegnography \n 2. Encrypt & Decrypt message \n 3. Use Discord.py to upload encrypted image \n 4. Integrate 1,2&3 \n 5. Get full in project.")
+    if message.content == "!hello":  # Mitnick introduces himself
+        await message.channel.send(" Hello. I am Mitnick. \nI try to reduce the spread of fake news and unverified images.")
 
-    if message.content == "!hello":
-        await message.channel.send(" Hello. I am Mitnick. \nI try to reduce the spread of fake news and unverified images. \n Beta testing in #bot-testing .")
-
-    if message.content == "!info":
+    if message.content == "!info":  # provides original author of image and number of times image was forwarded forwards
         async for m in message.channel.history(limit=10):
+            # ignore if author is bot itself
             if m.author.name == "Mitnick" and len(m.attachments) > 0:
                 msg = m
                 break
 
-        pic_ext = ['.jpg', '.png', '.jpeg']
+        pic_ext = ['.png']  # current extensions accepted
         for ext in pic_ext:
             if msg.attachments[0].url.endswith(ext):
                 f = msg.attachments[0]
                 await f.save(r".\A.png")
-                hashAisehi = rsaFCS.extract_code("A.png")
+                hashExtracted = rsaFCS.extract_code("A.png")  # extracting hash
+                # extracting data stored in image
                 stegoData = stego.Decode("recovered.png")
                 user = await client.fetch_user(int(stegoData[1:]))
                 await message.channel.send("Hey <@" + str(message.author.id) + ">! \nThe last image has been forwarded " + stegoData[0] + " times. It was originally sent by \"" + user.name + "\"")
 
-    pic_ext = ['.jpg', '.png', '.jpeg']
+    pic_ext = ['.png']
     for ext in pic_ext:
         if len(message.attachments) > 0:
             if message.attachments[0].url.endswith(ext):
-                print("Image uploaded.")
-                f = message.attachments[0]
-                nf = await f.to_file()
-                await f.save(r".\A.png")
-                if(checkIfHashPresent("A.png") == 1):
-                    # hash present
+                print("Image uploaded.")  # printed in terminal
+                f = message.attachments[0]  # image attachment of message stored
+                nf = await f.to_file()  
+                await f.save(r".\A.png")  # stored image file save as A.png
+                if(checkIfHashPresent("A.png") == 1):  # true if hash present i.e. either forwarded image or editted image
 
-                    hashStoredEncrypted = rsaFCS.extract_code("A.png")
-
-                    # # debugging: printing hash and encoded hash in console
-                    # print("enc h")
-                    # print(hashStoredEncrypted)
+                    encryptedHashStored = rsaFCS.extract_code("A.png")  # extarcting encrypted hash that was stored in image
                     hashStored = rsaFCS.read_msg(
-                        hashStoredEncrypted, privateKey)
-                    # print("h")
-                    # print(hashStored)
+                        encryptedHashStored, privateKey)  # decrypting message to form hash
 
-                    if(checkIfHashValid("recovered.png", hashStored) == -1):
-                        # hash not valid ... give caution ... treated as new image
-                        print("This image has been edited.")
-                        nof = str(0)
-                        source = str(message.author.id)
-                        stego.Encode("recovered.png", nof + source, "B.png")
+                    
+                    if(checkIfHashValid("recovered.png", hashStored) == -1):  # check if calculated hash matches with hash found in image
+                        # hash dont match i.e. image editted since last forward... treated as new image
+                        print("This image has been edited.")  # printed in terminal
+                        nof = str(0)  # number of forwards
+                        source = str(message.author.id)  # message author is source
+                        stego.Encode("recovered.png", nof + source, "B.png")  # recovered png is png without previous hash, hiding (steganography) number of forwards and source in image
 
                         with open("B.png", 'rb') as imageFile:
-                            imageString = base64.b64encode(imageFile.read())
-                        hashToBeStored = rsaFCS.gen_SHA256_digest(imageString)
+                            imageString = base64.b64encode(imageFile.read())  # image converted to ASCII
+                        hashToBeStored = rsaFCS.gen_SHA256_digest(imageString)  # hash generated of image (i.e. stegno(image))
                         encryptedHash = rsaFCS.encode_msg(
-                            hashToBeStored, publicKey)
+                            hashToBeStored, publicKey)  # hash encrypted
 
-                        rsaFCS.append2img(encryptedHash, "B.png")
+                        rsaFCS.append2img(encryptedHash, "B.png")   # encrypted hash appended to image
 
-                        # if(message.author.top_role.name != "admin"):
-                        await message.channel.purge(limit=1)
-                        # await message.channel.send("Sent by <@" + str(message.author.id) + "> \n\n Caution this image has been edited by <@" + str(message.author.id) + ">  \n\n")
+                        await message.channel.purge(limit=1)  # removes previous message/image to send its marked message/image
                         await message.channel.send(content="Sent by <@" + str(message.author.id) + "> \n\n Caution this image has been edited by <@" + str(message.author.id) + ">  \n\n", file=discord.File('encoded.png'))
                         break
-                        # else:
-                        #     await message.channel.purge(limit=1)
-                        #     await message.channel.send("Image edited and sent by <@" + str(message.author.id) + "> (admin). Verified Image.")
-                        #     await message.channel.send(content=encryptedHash, file=discord.File('encoded.png'))
-                        #     break
 
-                    else:
-                        # hash has been verified, integrity is maintained
-                        print("hash has been verified, integrity is maintained")
+                    else:  # hash verified, integrity is maintained
+                        print(" This is a forwarded image.") # printed in terminal
                         data = stego.Decode("recovered.png")
                         nof = data[0]
                         gu = message.author.guild
                         originalAuthor = await gu.fetch_member(int(data[1:]))
-                        if(int(nof) >= 5 and originalAuthor.top_role.name != "admin"):
-                            await message.channel.purge(limit=1)
+                        if(int(nof) >= 5 and originalAuthor.top_role.name != "admin"):  # if number of forwards > 5 and never verified by an admin
+                            await message.channel.purge(limit=1)  # removes previous message/image to send its marked message/image
                             await message.channel.send("Hey <@" + str(message.author.id) + ">!  \nThat was an unverified image/information and has reached its forwarding limit, therefore has been retracted.")
                             break
 
-                        nof = str(int(nof) + 1)
-                        source = data[1:]
-                        # await message.channel.purge(limit=1)
-                        # if(originalAuthor.top_role.name == "admin"):
-                        #     await message.channel.send("Verified image. Sent by admin.")
-                        # else:
-                        #     await message.channel.send("Caution: This image is unverified.")
-                        stego.Encode("recovered.png", nof + source, "B.png")
+                        nof = str(int(nof) + 1)  # number of forwards 
+                        source = data[1:]  # getting author of original image
+                        stego.Encode("recovered.png", nof + source, "B.png")  # recovered png is png without previous hash, hiding (steganography) number of forwards and source in image
 
                         with open("B.png", 'rb') as imageFile:
-                            imageString = base64.b64encode(imageFile.read())
-                        hashToBeStored = rsaFCS.gen_SHA256_digest(imageString)
+                            imageString = base64.b64encode(imageFile.read())  # image converted to ASCII
+                        hashToBeStored = rsaFCS.gen_SHA256_digest(imageString) # hash generated of image (i.e. stegno(image))
                         encryptedHash = rsaFCS.encode_msg(
-                            hashToBeStored, publicKey)
+                            hashToBeStored, publicKey)  # hash encrypted
 
-                        # # debugging: printing hash and encoded hash in console
-                        # print("enc hs")
-                        # print(encryptedHash)
-                        # print("hs")
-                        # print(hashToBeStored)
+                        rsaFCS.append2img(encryptedHash, "B.png")  # encrypted hash appended to image
 
-                        rsaFCS.append2img(encryptedHash, "B.png")
-
-                else:
-                    # hash not present .... i.e. new image
-                    print("hash not present .... i.e. new image")
-                    nof = str(0)
-                    source = str(message.author.id)
-                    stego.Encode("A.png", nof + source, "B.png")
+                else: # hash not present .... i.e. new image
+                    print("This is a new image.") # printed in terminal
+                    nof = str(0)  # number of forwards is 0
+                    source = str(message.author.id)  # image converted to ASCII
+                    stego.Encode("A.png", nof + source, "B.png")  # image encoded with number of Forwards & source 
 
                     with open("B.png", 'rb') as imageFile:
-                        imageString = base64.b64encode(imageFile.read())
-                    hashToBeStored = rsaFCS.gen_SHA256_digest(imageString)
+                        imageString = base64.b64encode(imageFile.read())  # image converted to ASCII
+                    hashToBeStored = rsaFCS.gen_SHA256_digest(imageString)  # hash generated of image (i.e. stegno(image)
                     encryptedHash = rsaFCS.encode_msg(
-                        hashToBeStored, publicKey)
-                    rsaFCS.append2img(encryptedHash, "B.png")
+                        hashToBeStored, publicKey)  # hash encrypted
+                    rsaFCS.append2img(encryptedHash, "B.png")  # encrypted hash appended to image
                     originalAuthor = message.author
 
-                # print(encryptedHash)
-                # print(len(encryptedHash))
-                # print(type(encryptedHash))
-                await message.channel.purge(limit=1)
-                # await message.channel.send(content="Sent by <@" + str(message.author.id) + ">  \n\n", file=discord.File('encoded.png'))
+                await message.channel.purge(limit=1)  # removes previous message/image, to send its marked messsage/image
                 if(originalAuthor.top_role.name == "admin"):
                     await message.channel.send(content="Sent by <@" + str(message.author.id) + ">. \n:white_check_mark: Verified image.", file=discord.File('encoded.png'))
                 else:
